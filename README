@@ -1,0 +1,70 @@
+
+To compile the program, navigate to the directory containing Main.java and run:
+
+To run the program, use the following command: 
+java Main -f <FILENAME> -b <BASE_SIZE> -i <INCREMENT> -l <LIMIT> -t <TRIALS> -d <DEPTH> -r -v <VERBOSITY> -p
+
+Command-Line Arguments
+-f <FILENAME>: Specifies the file containing the dataset (required).
+-h <HIDDEN_LAYERS>: Specifies the number of hidden layers, followed by the size of each hidden layer (e.g., -h 2 5 3 for two hidden layers with sizes 5 and 3).
+-a <LEARNING_RATE>: Sets the learning rate for gradient descent (default: 0.01).
+-e <EPOCH_LIMIT>: Sets the maximum number of training epochs (default: 1000).
+-m <BATCH_SIZE>: Specifies the mini-batch size for training (default: 1).
+-l <LAMBDA>: Sets the regularization parameter to control overfitting (default: 0.0).
+-w <WEIGHT_INIT>: Specifies the range for random weight initialization, [-w, w] (default: 0.1).
+-v <VERBOSITY>: Specifies the verbosity level for output (default: 1).
+1: Basic output (e.g., final training and validation accuracy).
+2: Additional details such as min/max feature values and training parameters.
+3: Detailed cost, loss, and accuracy during training.
+4: Full details including forward and backward propagation for debugging.
+-r: Enables randomization of the dataset for train/validation split. Without this flag, data will be used in sequential order.
+
+NOT WORKING
+Back propagation is buggy. Something in this section of code in backProp is not quite right, I think it is how neuron.setError() is set.
+			
+			
+			for(int layerIndex = layers.size() - 2; layerIndex >= 1; layerIndex--) {
+				//grab layers				
+				Layer currLayer = layers.get(layerIndex);
+				Layer nextLayer = layers.get(layerIndex + 1);
+				
+				if (verbosity == 4 && debug == 1) {
+		            System.out.print("      Layer " + (layerIndex + 1) + " (hidden):      Delta_j: ");
+		        }
+
+				//go through current layer of neurons 
+				for(int i =0; i < currLayer.getNeurons().size(); i++) {
+					Neuron neuron = currLayer.getNeurons().get(i);
+					if (neuron.isBias()) {
+				        //System.out.println("skipping bias in backpropagation for layer " + layerIndex);
+				        continue;
+				    }
+					double sum = 0.0;
+					
+					//go through next layer of neurons
+					for(int j = 0; j < nextLayer.getNeurons().size(); j++) {						
+						Neuron nextNeuron = nextLayer.getNeurons().get(j);
+						if(nextNeuron.isBias()) continue;
+						double[] nextWeights = neuron.getWeights();
+						//System.out.println(neuron.bias);
+						//System.out.println("test" + nextNeuron.getWeights()[i]);
+						if (nextWeights.length > i) {
+		                    sum += nextNeuron.getError() * nextWeights[i];
+		                }
+					}
+					
+					double output = neuron.getOutput();
+			        double error = sum * neuron.activationDerivative(output); //logistic derivative
+			        neuron.setError(error);
+						
+			        //print delta_j for v level 4
+		            if (verbosity == 4 && debug == 1) {
+		                System.out.printf("%.3f ", error);
+		            }
+		      
+				}
+				if(verbosity == 4 && debug == 1) {
+					System.out.println();
+				}
+				
+			}
